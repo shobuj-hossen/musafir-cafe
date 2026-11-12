@@ -1,3 +1,4 @@
+import Logo from "@/components/logo"
 import { Button } from "@/components/ui/button"
 
 export default function Page() {
@@ -14,6 +15,7 @@ export default function Page() {
           (Press <kbd>d</kbd> to toggle dark mode)
         </div>
       </div>
+      <Logo />
     </div>
   )
 }
