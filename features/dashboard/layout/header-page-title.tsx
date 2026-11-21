@@ -2,7 +2,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useSelectedSidebaritem } from "./use-selected-sidebar-item"
 
-export default function AppHeaderPageTitle() {
+export default function HeaderPageTitle() {
   const selectedSidebarItem = useSelectedSidebaritem()
   return (
     <div className="flex shrink-0 items-center gap-2">

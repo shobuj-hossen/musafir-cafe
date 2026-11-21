@@ -20,11 +20,7 @@ export function AppSidebarSkeleton(
     <Suspense>
       <Sidebar {...props}>
         <SidebarHeader className="gap-3">
-          <div className="flex items-center gap-2 px-2 py-1.5">
-            <Skeleton className="h-8 w-8 rounded-lg" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <Skeleton className="h-9 w-full rounded-md" />
+          <Skeleton className="h-18 w-full rounded-md" />
         </SidebarHeader>
 
         <SidebarContent>

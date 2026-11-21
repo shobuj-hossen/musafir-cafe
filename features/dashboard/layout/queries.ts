@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-export async function getDashboardSidebarData() {
+export async function getDashboardInitialData() {
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
@@ -14,40 +14,20 @@ export async function getDashboardSidebarData() {
     headers: requestHeaders,
   })
 
-  // Read the active organization ID directly from the session.
-  const activeOrganizationId = session.session.activeOrganizationId
-
-  let activeOrganization: Awaited<
-    ReturnType<typeof auth.api.getFullOrganization>
-  > = null
-  let activeMember: Awaited<
-    ReturnType<typeof auth.api.getActiveMember>
-  > | null = null
-
-  // Only request active organization data when an ID exists.
-  if (activeOrganizationId) {
-    const [organizationResult, memberResult] = await Promise.allSettled([
-      auth.api.getFullOrganization({
-        headers: requestHeaders,
-      }),
-      auth.api.getActiveMember({
-        headers: requestHeaders,
-      }),
-    ])
-
-    if (organizationResult.status === "fulfilled") {
-      activeOrganization = organizationResult.value
-    }
-
-    if (memberResult.status === "fulfilled") {
-      activeMember = memberResult.value
-    }
+  if (organizations.length === 0) {
+    redirect("/onboarding")
   }
+
+  const activeOrganization = await auth.api.getFullOrganization({
+    headers: requestHeaders,
+  })
+  const activeMember = await auth.api.getActiveMember({
+    headers: requestHeaders,
+  })
 
   return {
     session,
     organizations,
-    activeOrganizationId,
     activeOrganization,
     activeMember,
   }

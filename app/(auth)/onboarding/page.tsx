@@ -1,3 +1,5 @@
+import OnboardingPage from "@/features/auth/pages/onboarding-page"
+
 export default function page() {
-  return <div>onboarding</div>
+  return <OnboardingPage />
 }

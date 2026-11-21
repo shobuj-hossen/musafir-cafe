@@ -1,5 +1,5 @@
-import { getDashboardSidebarData } from "./queries"
+import { getDashboardInitialData } from "./queries"
 
-export type DashboardSidebarData = Awaited<
-  ReturnType<typeof getDashboardSidebarData>
+export type DashboardInitialData = Awaited<
+  ReturnType<typeof getDashboardInitialData>
 >

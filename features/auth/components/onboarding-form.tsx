@@ -4,20 +4,18 @@ import { useAppForm } from "@/components/form/use-app-form"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Field } from "@/components/ui/field"
 import { toast } from "@/components/ui/toast"
 import { authClient } from "@/lib/auth-client"
 import { generateAvatarUrl } from "@/lib/generate-avatar"
+import { createSlug } from "@/lib/utils"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { z } from "zod"
 
 const locationSchema = z.object({
@@ -35,15 +33,8 @@ export type CreateLocationInput = {
   avatarUrl: string
 }
 
-type CreateLocationDialogProps = {
-  cancelDisabled?: boolean
-}
-
-export function CreateLocationDialog({
-  cancelDisabled = false,
-}: CreateLocationDialogProps) {
+export function OnboardingForm() {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
   const defaultValues: LocationSchema = {
     name: "",
   }
@@ -55,45 +46,70 @@ export function CreateLocationDialog({
       onChange: locationSchema,
     },
     onSubmit: async ({ value }) => {
-      const avatarUrl = generateAvatarUrl(value.name, "shape-grid")
+      const name = value.name.trim()
+      const slug = createSlug(name)
+
+      const logo = generateAvatarUrl(name, "shape-grid")
 
       const newOrg = await authClient.organization.create({
-        name: value.name,
-        slug: value.name.toLocaleLowerCase(),
-        logo: avatarUrl,
+        name,
+        slug,
+        logo,
+        keepCurrentActiveOrganization: false,
       })
 
-      if (newOrg.data) {
-        toast.add({
-          type: "success",
-          title: "Location created",
-          description: `${value.name} has been successfully added.`,
-        })
-
-        form.reset()
-        router.refresh()
-        setOpen(false)
-      } else {
+      if (newOrg.error || !newOrg.data) {
         toast.add({
           type: "error",
-          title: "Something went wrong",
-          description: "Unable to create location. Please try again.",
+          title: "Unable to create location",
+          description: "Please try again.",
         })
+        return
       }
+
+      // Activate the newly created organization
+      const activateOrganization = () =>
+        authClient.organization.setActive({
+          organizationId: newOrg.data.id,
+        })
+
+      let session = await activateOrganization()
+
+      // Retry once if activation fails
+      if (session.error) {
+        session = await activateOrganization()
+      }
+
+      if (session.error) {
+        toast.add({
+          type: "warning",
+          title: "Location created, but not activated",
+          description:
+            "Your location was created successfully. Please select it from your location switcher.",
+        })
+
+        router.push("/dashboard")
+        return
+      }
+
+      form.reset()
+
+      toast.add({
+        type: "success",
+        title: "Location created",
+        description: `${name} has been successfully added.`,
+      })
+
+      router.push("/dashboard/overviews")
     },
   })
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>create Organization</Button>} />
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add Restaurant Location</DialogTitle>
-          <DialogDescription>
-            Create a new restaurant branch by providing its location name.
-          </DialogDescription>
-        </DialogHeader>
-
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Your First Restaurant Location</CardTitle>
+      </CardHeader>
+      <CardContent className="sm:max-w-md">
         <form
           id="create-location-form"
           onSubmit={(e) => {
@@ -152,29 +168,24 @@ export function CreateLocationDialog({
             </form.Subscribe>
           </div>
         </form>
-
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={cancelDisabled}>
-            Cancel
-          </Button>
-
-          <form.AppForm>
-            <form.Subscribe selector={(state) => state.isSubmitting}>
-              {(isPending) => (
-                <Field>
-                  <Button
-                    type="submit"
-                    form="create-location-form"
-                    disabled={isPending}
-                  >
-                    {isPending ? "Creating..." : "Create Location"}
-                  </Button>
-                </Field>
-              )}
-            </form.Subscribe>
-          </form.AppForm>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+      <CardFooter>
+        <form.AppForm>
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isPending) => (
+              <Field>
+                <Button
+                  type="submit"
+                  form="create-location-form"
+                  disabled={isPending}
+                >
+                  {isPending ? "Creating..." : "Create Location"}
+                </Button>
+              </Field>
+            )}
+          </form.Subscribe>
+        </form.AppForm>
+      </CardFooter>
+    </Card>
   )
 }

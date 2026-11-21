@@ -25,14 +25,10 @@ import {
 } from "@/components/ui/sidebar"
 
 import { LogoutMenuItem } from "@/components/shared/logout-menu-item"
-import { DashboardSidebarData } from "./types"
+import { DashboardInitialData } from "./types"
 
-export function NavUser({
-  session,
-}: {
-  session: DashboardSidebarData["session"]
-}) {
-  const user = session.user
+export function NavUser({ data }: { data: DashboardInitialData }) {
+  const user = data.session.user
   const initials = user.name.slice(0, 1).toUpperCase() || "U"
 
   return (
@@ -55,7 +51,7 @@ export function NavUser({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Staff
+                    {data.activeMember.role}
                   </span>
                 </div>
 

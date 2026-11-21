@@ -1,7 +1,7 @@
 "use client"
 import { usePathname } from "next/navigation"
 
-import { sidebarData } from "./app-sidebar"
+import { sidebarData } from "./dashboard-sidebar"
 
 export function useSelectedSidebaritem() {
   const pathname = usePathname().split("?")[0]
