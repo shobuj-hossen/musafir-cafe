@@ -1,7 +1,11 @@
+"use client"
 import Logo from "@/components/logo"
 import { Button } from "@/components/ui/button"
+import { CreateLocationDialog } from "@/features/dashboard/layout/restaurant-location-switcher/create-location-dialog"
+import { authClient } from "@/lib/auth-client"
 
 export default function Page() {
+  const data = authClient.useSession()
   return (
     <div className="flex min-h-svh p-6">
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
@@ -15,7 +19,9 @@ export default function Page() {
           (Press <kbd>d</kbd> to toggle dark mode)
         </div>
       </div>
+      <CreateLocationDialog />
       <Logo />
+      {data.data?.user.name}
     </div>
   )
 }

@@ -7,7 +7,7 @@ export default function Logo() {
     <div>
       <Image
         loading="eager"
-        style={{ width: "240px", height: "auto" }}
+        style={{ width: "200px", height: "auto" }}
         src={logo}
         alt="Logo"
       />
